@@ -6,15 +6,8 @@ namespace DependencyInjectionWorkshopTests;
 [TestFixture]
 public class AuthenticationServiceTests
 {
-    private IFailedCounter _failedCounter;
-    private IHash _hash;
-    private ILog _log;
-    private IOtp _otp;
-    private IProfile _profile;
-    private INotification _notification;
-
-    [Test]
-    public void is_valid()
+    [SetUp]
+    public void Setup()
     {
         _failedCounter = Substitute.For<IFailedCounter>();
         _hash = Substitute.For<IHash>();
@@ -22,16 +15,56 @@ public class AuthenticationServiceTests
         _otp = Substitute.For<IOtp>();
         _profile = Substitute.For<IProfile>();
         _notification = Substitute.For<INotification>();
-        var authenticationService =
-            new AuthenticationService(_failedCounter, _hash, _log, _otp, _profile, _notification);
-        _failedCounter.GetIsAccountLocked("andy").Returns(false);
-        _profile.GetPasswordFromDb("andy").Returns("HASHPASSWORD");
-        _hash.Compute("1234").Returns("HASHPASSWORD");
-        _otp.GetCurrentOtp("andy").Returns("0000");
+        _authenticationService = new AuthenticationService(_failedCounter, _hash, _log, _otp, _profile, _notification);
+    }
 
-        var verify = authenticationService.Verify("andy", "1234", "0000");
+    private IFailedCounter _failedCounter;
+    private IHash _hash;
+    private ILog _log;
+    private IOtp _otp;
+    private IProfile _profile;
+    private INotification _notification;
+    private AuthenticationService _authenticationService;
 
+    [Test]
+    public void valid()
+    {
+        WhenValid("andy");
+        ShouldResetFailedCount("andy");
+    }
+
+    private void WhenValid(string accountId)
+    {
+        GivenIsAccountLocked(accountId, false);
+        GivenPasswordFromDb(accountId, "HASHPASSWORD");
+        GivenHashedPassword("1234", "HASHPASSWORD");
+        GivenCurrentOtp(accountId, "0000");
+        var verify = _authenticationService.Verify(accountId, "1234", "0000");
         Assert.AreEqual(true, verify);
-        _failedCounter.Received(1).Reset("andy");
+    }
+
+    private void ShouldResetFailedCount(string accountId)
+    {
+        _failedCounter.Received(1).Reset(accountId);
+    }
+
+    private void GivenCurrentOtp(string accountId, string returnThis)
+    {
+        _otp.GetCurrentOtp(accountId).Returns(returnThis);
+    }
+
+    private void GivenHashedPassword(string password, string returnThis)
+    {
+        _hash.Compute(password).Returns(returnThis);
+    }
+
+    private void GivenPasswordFromDb(string accountId, string returnThis)
+    {
+        _profile.GetPasswordFromDb(accountId).Returns(returnThis);
+    }
+
+    private void GivenIsAccountLocked(string accountId, bool returnThis)
+    {
+        _failedCounter.GetIsAccountLocked(accountId).Returns(returnThis);
     }
 }
