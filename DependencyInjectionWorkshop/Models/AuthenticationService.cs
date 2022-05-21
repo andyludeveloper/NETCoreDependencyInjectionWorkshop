@@ -47,7 +47,7 @@ namespace DependencyInjectionWorkshop.Models
 
                 var failedCount = _failedCountProxy.GetFailedCount(accountId, httpClient);
 
-                _nLogAdapter.LogFailedCount(accountId, failedCount);
+                _nLogAdapter.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
 
                 _slackAdapter.Notify("Login failure");
                 return false;
