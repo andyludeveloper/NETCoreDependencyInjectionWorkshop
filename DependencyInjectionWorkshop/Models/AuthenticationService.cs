@@ -31,19 +31,19 @@ namespace DependencyInjectionWorkshop.Models
             }
 
             var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
-            var inputPassword = _sha256Adapter.GetHashedPassword(password);
+            var inputPassword = _sha256Adapter.Calculate(password);
             var otpFromApi = _otpProxy.GetCurrentOtp(accountId);
 
             if (passwordFromDb == inputPassword && otp == otpFromApi)
             {
-                _failedCountProxy.ResetFailedCount(accountId);
+                _failedCountProxy.Reset(accountId);
                 return true;
             }
             else
             {
-                _failedCountProxy.AddFailedCount(accountId);
+                _failedCountProxy.Add(accountId);
 
-                var failedCount = _failedCountProxy.GetFailedCount(accountId);
+                var failedCount = _failedCountProxy.Get(accountId);
 
                 _nLogAdapter.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
 

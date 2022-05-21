@@ -12,21 +12,21 @@ public class FailedCountProxy
         return isAccountLocked;
     }
 
-    public void AddFailedCount(string accountId)
+    public void Add(string accountId)
     {
         var addFailedCountResponse = new HttpClient { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
 
         addFailedCountResponse.EnsureSuccessStatusCode();
     }
 
-    public void ResetFailedCount(string accountId)
+    public void Reset(string accountId)
     {
         var resetResponse = new HttpClient { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
         resetResponse.EnsureSuccessStatusCode();
     }
 
 
-    public int GetFailedCount(string accountId)
+    public int Get(string accountId)
     {
         var failedCountResponse =
             new HttpClient { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/failedCounter/GetFailedCount", accountId).Result;
