@@ -9,6 +9,7 @@ namespace DependencyInjectionWorkshop.Models
         private readonly OtpProxy _otpProxy;
         private readonly SlackAdapter _slackAdapter;
         private readonly FailedCountProxy _failedCountProxy;
+        private readonly NLogAdapter _nLogAdapter;
 
         public AuthenticationService()
         {
@@ -17,6 +18,7 @@ namespace DependencyInjectionWorkshop.Models
             _otpProxy = new OtpProxy();
             _slackAdapter = new SlackAdapter();
             _failedCountProxy = new FailedCountProxy();
+            _nLogAdapter = new NLogAdapter();
         }
 
         public bool Verify(string accountId, string password, string otp)
@@ -45,17 +47,11 @@ namespace DependencyInjectionWorkshop.Models
 
                 var failedCount = _failedCountProxy.GetFailedCount(accountId, httpClient);
 
-                LogFailedCount(accountId, failedCount);
+                _nLogAdapter.LogFailedCount(accountId, failedCount);
 
                 _slackAdapter.Notify("Login failure");
                 return false;
             }
-        }
-
-        private void LogFailedCount(string accountId, int failedCount)
-        {
-            var logger = NLog.LogManager.GetCurrentClassLogger();
-            logger.Info($"accountId:{accountId} failed times:{failedCount}");
         }
     }
 
