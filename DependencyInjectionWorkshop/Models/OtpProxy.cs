@@ -1,6 +1,11 @@
 namespace DependencyInjectionWorkshop.Models;
 
-public class OtpProxy
+public interface IOtp
+{
+    string GetCurrentOtp(string accountId);
+}
+
+public class Otp : IOtp
 {
     public string GetCurrentOtp(string accountId)
     {

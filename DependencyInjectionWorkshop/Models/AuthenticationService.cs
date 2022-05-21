@@ -2,46 +2,46 @@
 
 public class AuthenticationService
 {
-    private readonly FailedCountProxy _failedCountProxy;
+    private readonly IFailedCounter _failedCounter;
     private readonly IHash _hash;
-    private readonly NLogAdapter _nLogAdapter;
-    private readonly OtpProxy _otpProxy;
-    private readonly ProfileDao _profileDao;
-    private readonly SlackAdapter _slackAdapter;
+    private readonly ILog _log;
+    private readonly IOtp _otp;
+    private readonly IProfile _profile;
+    private readonly INotification _notification;
 
     public AuthenticationService()
     {
-        _profileDao = new ProfileDao();
+        _profile = new ProfileDao();
         _hash = new Sha256Adapter();
-        _otpProxy = new OtpProxy();
-        _slackAdapter = new SlackAdapter();
-        _failedCountProxy = new FailedCountProxy();
-        _nLogAdapter = new NLogAdapter();
+        _otp = new Otp();
+        _notification = new SlackAdapter();
+        _failedCounter = new FailedCounter();
+        _log = new NLogAdapter();
     }
 
     public bool Verify(string accountId, string password, string otp)
     {
         //is account locked
-        var isAccountLocked = _failedCountProxy.GetIsAccountLocked(accountId);
+        var isAccountLocked = _failedCounter.GetIsAccountLocked(accountId);
         if (isAccountLocked) throw new FailedTooManyTimesException { AccountId = accountId };
 
-        var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
+        var passwordFromDb = _profile.GetPasswordFromDb(accountId);
         var inputPassword = _hash.Compute(password);
-        var otpFromApi = _otpProxy.GetCurrentOtp(accountId);
+        var otpFromApi = _otp.GetCurrentOtp(accountId);
 
         if (passwordFromDb == inputPassword && otp == otpFromApi)
         {
-            _failedCountProxy.Reset(accountId);
+            _failedCounter.Reset(accountId);
             return true;
         }
 
-        _failedCountProxy.Add(accountId);
+        _failedCounter.Add(accountId);
 
-        var failedCount = _failedCountProxy.Get(accountId);
+        var failedCount = _failedCounter.Get(accountId);
 
-        _nLogAdapter.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
+        _log.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
 
-        _slackAdapter.Notify("Login failure");
+        _notification.Notify("Login failure");
         return false;
     }
 }

@@ -1,6 +1,14 @@
 namespace DependencyInjectionWorkshop.Models;
 
-public class FailedCountProxy
+public interface IFailedCounter
+{
+    bool GetIsAccountLocked(string accountId);
+    void Add(string accountId);
+    void Reset(string accountId);
+    int Get(string accountId);
+}
+
+public class FailedCounter : IFailedCounter
 {
     public bool GetIsAccountLocked(string accountId)
     {
