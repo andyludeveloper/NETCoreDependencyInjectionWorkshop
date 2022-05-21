@@ -7,12 +7,14 @@ namespace DependencyInjectionWorkshop.Models
         private readonly ProfileDao _profileDao;
         private readonly Sha256Adapter _sha256Adapter;
         private readonly OtpProxy _otpProxy;
+        private readonly SlackAdapter _slackAdapter;
 
         public AuthenticationService()
         {
             _profileDao = new ProfileDao();
             _sha256Adapter = new Sha256Adapter();
             _otpProxy = new OtpProxy();
+            _slackAdapter = new SlackAdapter();
         }
 
         public bool Verify(string accountId, string password, string otp)
@@ -43,7 +45,7 @@ namespace DependencyInjectionWorkshop.Models
 
                 LogFailedCount(accountId, failedCount);
 
-                Notify("Login failure");
+                _slackAdapter.Notify("Login failure");
                 return false;
             }
         }
@@ -56,12 +58,6 @@ namespace DependencyInjectionWorkshop.Models
             isLockedResponse.EnsureSuccessStatusCode();
             var isAccountLocked = isLockedResponse.Content.ReadAsAsync<bool>().Result;
             return isAccountLocked;
-        }
-
-        private static void Notify(string message)
-        {
-            var slackClient = new SlackClient("my api token");
-            slackClient.PostMessage(_ => { }, "my channel", message, "my bot name");
         }
 
         private static void LogFailedCount(string accountId, int failedCount)
