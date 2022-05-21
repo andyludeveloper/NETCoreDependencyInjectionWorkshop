@@ -5,11 +5,12 @@ public class AuthenticationService
     private readonly IFailedCounter _failedCounter;
     private readonly IHash _hash;
     private readonly ILog _log;
+    private readonly INotification _notification;
     private readonly IOtp _otp;
     private readonly IProfile _profile;
-    private readonly INotification _notification;
 
-    public AuthenticationService(IFailedCounter failedCounter, IHash hash, ILog log, IOtp otp, IProfile profile, INotification notification)
+    public AuthenticationService(IFailedCounter failedCounter, IHash hash, ILog log, IOtp otp, IProfile profile,
+        INotification notification)
     {
         _failedCounter = failedCounter;
         _hash = hash;
