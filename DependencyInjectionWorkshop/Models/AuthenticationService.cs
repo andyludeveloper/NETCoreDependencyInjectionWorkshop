@@ -45,18 +45,21 @@ public class AuthenticationService
             _failedCounter.Reset(accountId);
             return true;
         }
+        else
+        {
 
-        _failedCounter.Add(accountId);
+            _failedCounter.Add(accountId);
 
-        var failedCount = _failedCounter.Get(accountId);
+            var failedCount = _failedCounter.Get(accountId);
 
-        _log.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
+            _log.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
 
-        _notification.Notify("Login failure");
-        return false;
+            _notification.Notify("Login failure");
+            return false;
+        }
+
     }
 }
-
 public class FailedTooManyTimesException : Exception
 {
     public string AccountId { get; set; }
