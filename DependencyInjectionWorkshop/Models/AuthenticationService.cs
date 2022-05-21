@@ -31,7 +31,7 @@ namespace DependencyInjectionWorkshop.Models
             }
 
             var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
-            var inputPassword = _sha256Adapter.Calculate(password);
+            var inputPassword = _sha256Adapter.Compute(password);
             var otpFromApi = _otpProxy.GetCurrentOtp(accountId);
 
             if (passwordFromDb == inputPassword && otp == otpFromApi)

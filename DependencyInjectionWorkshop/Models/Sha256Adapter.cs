@@ -4,7 +4,7 @@ namespace DependencyInjectionWorkshop.Models;
 
 public class Sha256Adapter
 {
-    public string Calculate(string password)
+    public string Compute(string password)
     {
         var crypt = new System.Security.Cryptography.SHA256Managed();
         var hash = new StringBuilder();
