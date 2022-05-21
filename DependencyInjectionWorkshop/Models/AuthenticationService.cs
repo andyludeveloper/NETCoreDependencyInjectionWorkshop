@@ -9,6 +9,16 @@ public class AuthenticationService
     private readonly IProfile _profile;
     private readonly INotification _notification;
 
+    public AuthenticationService(IFailedCounter failedCounter, IHash hash, ILog log, IOtp otp, IProfile profile, INotification notification)
+    {
+        _failedCounter = failedCounter;
+        _hash = hash;
+        _log = log;
+        _otp = otp;
+        _profile = profile;
+        _notification = notification;
+    }
+
     public AuthenticationService()
     {
         _profile = new ProfileDao();
