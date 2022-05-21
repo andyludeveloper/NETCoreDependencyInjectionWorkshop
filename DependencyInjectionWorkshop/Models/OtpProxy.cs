@@ -1,6 +1,6 @@
 namespace DependencyInjectionWorkshop.Models;
 
-public class OtpAdapter
+public class OtpProxy
 {
     public string GetCurrentOtp(string accountId, HttpClient httpClient)
     {

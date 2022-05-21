@@ -6,13 +6,13 @@ namespace DependencyInjectionWorkshop.Models
     {
         private readonly ProfileDao _profileDao;
         private readonly Sha256Adapter _sha256Adapter;
-        private readonly OtpAdapter _otpAdapter;
+        private readonly OtpProxy _otpProxy;
 
         public AuthenticationService()
         {
             _profileDao = new ProfileDao();
             _sha256Adapter = new Sha256Adapter();
-            _otpAdapter = new OtpAdapter();
+            _otpProxy = new OtpProxy();
         }
 
         public bool Verify(string accountId, string password, string otp)
@@ -28,7 +28,7 @@ namespace DependencyInjectionWorkshop.Models
 
             var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
             var inputPassword = _sha256Adapter.GetHashedPassword(password);
-            var otpFromApi = _otpAdapter.GetCurrentOtp(accountId, httpClient);
+            var otpFromApi = _otpProxy.GetCurrentOtp(accountId, httpClient);
 
             if (passwordFromDb == inputPassword && otp == otpFromApi)
             {
