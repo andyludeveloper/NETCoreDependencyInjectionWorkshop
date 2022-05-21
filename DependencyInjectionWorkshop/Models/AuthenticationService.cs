@@ -21,7 +21,7 @@ namespace DependencyInjectionWorkshop.Models
 
             var passwordFromDb = GetPasswordFromDb(accountId);
 
-            var inputPassword = GetHashedPassowrd(password);
+            var inputPassword = GetHashedPassword(password);
 
             var otpFromApi = GetCurrentOtp(accountId, httpClient);
 
@@ -104,7 +104,7 @@ namespace DependencyInjectionWorkshop.Models
             return otpFromApi;
         }
 
-        private static string GetHashedPassowrd(string password)
+        private static string GetHashedPassword(string password)
         {
             var crypt = new System.Security.Cryptography.SHA256Managed();
             var hash = new StringBuilder();
