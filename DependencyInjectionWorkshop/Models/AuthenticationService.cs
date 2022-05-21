@@ -23,10 +23,8 @@ namespace DependencyInjectionWorkshop.Models
 
         public bool Verify(string accountId, string password, string otp)
         {
-            var httpClient = new HttpClient { BaseAddress = new Uri("http://joey.com/") };
-
             //is account locked
-            var isAccountLocked = _failedCountProxy.GetIsAccountLocked(accountId, httpClient);
+            var isAccountLocked = _failedCountProxy.GetIsAccountLocked(accountId);
             if (isAccountLocked)
             {
                 throw new FailedTooManyTimesException { AccountId = accountId };
@@ -34,18 +32,18 @@ namespace DependencyInjectionWorkshop.Models
 
             var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
             var inputPassword = _sha256Adapter.GetHashedPassword(password);
-            var otpFromApi = _otpProxy.GetCurrentOtp(accountId, httpClient);
+            var otpFromApi = _otpProxy.GetCurrentOtp(accountId);
 
             if (passwordFromDb == inputPassword && otp == otpFromApi)
             {
-                _failedCountProxy.ResetFailedCount(accountId, httpClient);
+                _failedCountProxy.ResetFailedCount(accountId);
                 return true;
             }
             else
             {
-                _failedCountProxy.AddFailedCount(accountId, httpClient);
+                _failedCountProxy.AddFailedCount(accountId);
 
-                var failedCount = _failedCountProxy.GetFailedCount(accountId, httpClient);
+                var failedCount = _failedCountProxy.GetFailedCount(accountId);
 
                 _nLogAdapter.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
 

@@ -2,9 +2,9 @@ namespace DependencyInjectionWorkshop.Models;
 
 public class FailedCountProxy
 {
-    public bool GetIsAccountLocked(string accountId, HttpClient httpClient)
+    public bool GetIsAccountLocked(string accountId)
     {
-        var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).GetAwaiter()
+        var isLockedResponse = new HttpClient { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).GetAwaiter()
             .GetResult();
 
         isLockedResponse.EnsureSuccessStatusCode();
@@ -12,24 +12,24 @@ public class FailedCountProxy
         return isAccountLocked;
     }
 
-    public void AddFailedCount(string accountId, HttpClient httpClient)
+    public void AddFailedCount(string accountId)
     {
-        var addFailedCountResponse = httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
+        var addFailedCountResponse = new HttpClient { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
 
         addFailedCountResponse.EnsureSuccessStatusCode();
     }
 
-    public void ResetFailedCount(string accountId, HttpClient httpClient)
+    public void ResetFailedCount(string accountId)
     {
-        var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
+        var resetResponse = new HttpClient { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
         resetResponse.EnsureSuccessStatusCode();
     }
 
 
-    public int GetFailedCount(string accountId, HttpClient httpClient)
+    public int GetFailedCount(string accountId)
     {
         var failedCountResponse =
-            httpClient.PostAsJsonAsync("api/failedCounter/GetFailedCount", accountId).Result;
+            new HttpClient { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/failedCounter/GetFailedCount", accountId).Result;
 
         failedCountResponse.EnsureSuccessStatusCode();
 
