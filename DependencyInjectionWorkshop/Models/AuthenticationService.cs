@@ -1,60 +1,52 @@
-﻿using SlackAPI;
+﻿namespace DependencyInjectionWorkshop.Models;
 
-namespace DependencyInjectionWorkshop.Models
+public class AuthenticationService
 {
-    public class AuthenticationService
+    private readonly FailedCountProxy _failedCountProxy;
+    private readonly IHash _hash;
+    private readonly NLogAdapter _nLogAdapter;
+    private readonly OtpProxy _otpProxy;
+    private readonly ProfileDao _profileDao;
+    private readonly SlackAdapter _slackAdapter;
+
+    public AuthenticationService()
     {
-        private readonly ProfileDao _profileDao;
-        private readonly Sha256Adapter _sha256Adapter;
-        private readonly OtpProxy _otpProxy;
-        private readonly SlackAdapter _slackAdapter;
-        private readonly FailedCountProxy _failedCountProxy;
-        private readonly NLogAdapter _nLogAdapter;
-
-        public AuthenticationService()
-        {
-            _profileDao = new ProfileDao();
-            _sha256Adapter = new Sha256Adapter();
-            _otpProxy = new OtpProxy();
-            _slackAdapter = new SlackAdapter();
-            _failedCountProxy = new FailedCountProxy();
-            _nLogAdapter = new NLogAdapter();
-        }
-
-        public bool Verify(string accountId, string password, string otp)
-        {
-            //is account locked
-            var isAccountLocked = _failedCountProxy.GetIsAccountLocked(accountId);
-            if (isAccountLocked)
-            {
-                throw new FailedTooManyTimesException { AccountId = accountId };
-            }
-
-            var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
-            var inputPassword = _sha256Adapter.Compute(password);
-            var otpFromApi = _otpProxy.GetCurrentOtp(accountId);
-
-            if (passwordFromDb == inputPassword && otp == otpFromApi)
-            {
-                _failedCountProxy.Reset(accountId);
-                return true;
-            }
-            else
-            {
-                _failedCountProxy.Add(accountId);
-
-                var failedCount = _failedCountProxy.Get(accountId);
-
-                _nLogAdapter.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
-
-                _slackAdapter.Notify("Login failure");
-                return false;
-            }
-        }
+        _profileDao = new ProfileDao();
+        _hash = new Sha256Adapter();
+        _otpProxy = new OtpProxy();
+        _slackAdapter = new SlackAdapter();
+        _failedCountProxy = new FailedCountProxy();
+        _nLogAdapter = new NLogAdapter();
     }
 
-    public class FailedTooManyTimesException : Exception
+    public bool Verify(string accountId, string password, string otp)
     {
-        public string AccountId { get; set; }
+        //is account locked
+        var isAccountLocked = _failedCountProxy.GetIsAccountLocked(accountId);
+        if (isAccountLocked) throw new FailedTooManyTimesException { AccountId = accountId };
+
+        var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
+        var inputPassword = _hash.Compute(password);
+        var otpFromApi = _otpProxy.GetCurrentOtp(accountId);
+
+        if (passwordFromDb == inputPassword && otp == otpFromApi)
+        {
+            _failedCountProxy.Reset(accountId);
+            return true;
+        }
+
+        _failedCountProxy.Add(accountId);
+
+        var failedCount = _failedCountProxy.Get(accountId);
+
+        _nLogAdapter.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
+
+        _slackAdapter.Notify("Login failure");
+        return false;
     }
+}
+
+public class FailedTooManyTimesException : Exception
+{
+    public string AccountId { get; set; }
 }
