@@ -1,13 +1,20 @@
-﻿using System.Data;
-using System.Data.SqlClient;
-using System.Text;
-using Dapper;
-using SlackAPI;
+﻿using SlackAPI;
 
 namespace DependencyInjectionWorkshop.Models
 {
     public class AuthenticationService
     {
+        private readonly ProfileDao _profileDao;
+        private readonly Sha256Adapter _sha256Adapter;
+        private readonly OtpAdapter _otpAdapter;
+
+        public AuthenticationService()
+        {
+            _profileDao = new ProfileDao();
+            _sha256Adapter = new Sha256Adapter();
+            _otpAdapter = new OtpAdapter();
+        }
+
         public bool Verify(string accountId, string password, string otp)
         {
             var httpClient = new HttpClient { BaseAddress = new Uri("http://joey.com/") };
@@ -19,11 +26,9 @@ namespace DependencyInjectionWorkshop.Models
                 throw new FailedTooManyTimesException { AccountId = accountId };
             }
 
-            var passwordFromDb = GetPasswordFromDb(accountId);
-
-            var inputPassword = GetHashedPassword(password);
-
-            var otpFromApi = GetCurrentOtp(accountId, httpClient);
+            var passwordFromDb = _profileDao.GetPasswordFromDb(accountId);
+            var inputPassword = _sha256Adapter.GetHashedPassword(password);
+            var otpFromApi = _otpAdapter.GetCurrentOtp(accountId, httpClient);
 
             if (passwordFromDb == inputPassword && otp == otpFromApi)
             {
@@ -45,7 +50,8 @@ namespace DependencyInjectionWorkshop.Models
 
         private static bool GetIsAccountLocked(string accountId, HttpClient httpClient)
         {
-            var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).GetAwaiter().GetResult();
+            var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).GetAwaiter()
+                .GetResult();
 
             isLockedResponse.EnsureSuccessStatusCode();
             var isAccountLocked = isLockedResponse.Content.ReadAsAsync<bool>().Result;
@@ -86,48 +92,6 @@ namespace DependencyInjectionWorkshop.Models
         {
             var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
             resetResponse.EnsureSuccessStatusCode();
-        }
-
-        private static string GetCurrentOtp(string accountId, HttpClient httpClient)
-        {
-            var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
-            string otpFromApi;
-            if (response.IsSuccessStatusCode)
-            {
-                otpFromApi = response.Content.ReadAsAsync<string>().Result;
-            }
-            else
-            {
-                throw new Exception($"web api error, accountId:{accountId}");
-            }
-
-            return otpFromApi;
-        }
-
-        private static string GetHashedPassword(string password)
-        {
-            var crypt = new System.Security.Cryptography.SHA256Managed();
-            var hash = new StringBuilder();
-            var crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes(password));
-            foreach (var theByte in crypto)
-            {
-                hash.Append(theByte.ToString("x2"));
-            }
-
-            var inputPassword = hash.ToString();
-            return inputPassword;
-        }
-
-        private static string GetPasswordFromDb(string accountId)
-        {
-            string passwordFromDb;
-            using (var connection = new SqlConnection("my connection string"))
-            {
-                passwordFromDb = connection.Query<string>("spGetUserPassword", new { Id = accountId },
-                    commandType: CommandType.StoredProcedure).SingleOrDefault();
-            }
-
-            return passwordFromDb;
         }
     }
 
