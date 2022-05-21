@@ -1,5 +1,4 @@
 ﻿using DependencyInjectionWorkshop.Models;
-using NUnit.Framework;
 
 namespace DependencyInjectionWorkshopTests
 {
@@ -10,6 +9,8 @@ namespace DependencyInjectionWorkshopTests
         public void is_valid()
         {
             var authenticationService = new AuthenticationService();
+            var verify = authenticationService.Verify("andy", "1234", "0000");
+            Assert.AreEqual(verify, true);
         }
     }
 }
