@@ -38,11 +38,27 @@ public class AuthenticationServiceTests
         // ShouldResetFailedCount("andy");
     }
 
+
     [Test]
     public void reset_failed_count_when_valid()
     {
         WhenValid("andy");
         ShouldResetFailedCount("andy");
+    }
+
+    [Test]
+    public void account_is_locked()
+    {
+        GivenIsAccountLocked("andy", true);
+
+        ShouldThrowFailedTooManyTimesException<FailedTooManyTimesException>("andy");
+    }
+
+    private void ShouldThrowFailedTooManyTimesException<TException>(string accountId) where TException : Exception
+    {
+        Assert.Throws<TException>(() =>
+            _authenticationService.Verify(accountId, "1234", "0000")
+        );
     }
 
     private void WhenValid(string accountId)
