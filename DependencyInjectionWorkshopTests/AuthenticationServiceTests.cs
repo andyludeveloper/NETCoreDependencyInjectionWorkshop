@@ -64,6 +64,25 @@ public class AuthenticationServiceTests
         _notification.Received().Notify("Login failure");
     }
 
+    [Test]
+    public void invalid_should_log()
+    {
+        GivenFailedCount("andy", 5);
+        GivenInvalid("andy");
+        ShouldLog("andy", 5);
+        // _notification.Received().Notify("Login failure");
+    }
+
+    private void ShouldLog(string accountId, int counter)
+    {
+        _log.Received().LogFailedCount(Arg.Is<string>(s => s.Contains(accountId) && s.Contains(counter.ToString())));
+    }
+
+    private void GivenFailedCount(string accountId, int returnThis)
+    {
+        _failedCounter.Get(accountId).Returns(returnThis);
+    }
+
     private void GivenInvalid(string accountId)
     {
         GivenIsAccountLocked(accountId, false);
