@@ -13,9 +13,9 @@ public class AuthenticationService : IAuthentication
 
     public AuthenticationService(IProfile profile, IHash hash, IOtp otp)
     {
+        _profile = profile;
         _hash = hash;
         _otp = otp;
-        _profile = profile;
     }
 
     public bool Verify(string accountId, string password, string otp)
