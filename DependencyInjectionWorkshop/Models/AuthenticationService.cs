@@ -28,16 +28,16 @@ public class AuthenticationService : IAuthentication
         _profile = profile;
     }
 
-    public AuthenticationService()
-    {
-        _profile = new ProfileDao();
-        _hash = new Sha256Adapter();
-        _otp = new Otp();
-        // _notification = new SlackAdapter();
-        _failedCounter = new FailedCounter();
-        _log = new NLogAdapter();
-        new NotificationDecorator(this, new SlackAdapter());
-    }
+    // public AuthenticationService()
+    // {
+    //     _profile = new ProfileDao();
+    //     _hash = new Sha256Adapter();
+    //     _otp = new Otp();
+    //     // _notification = new SlackAdapter();
+    //     _failedCounter = new FailedCounter();
+    //     _log = new NLogAdapter();
+    //     new NotificationDecorator(this, new SlackAdapter());
+    // }
 
     public bool Verify(string accountId, string password, string otp)
     {
