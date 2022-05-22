@@ -11,14 +11,13 @@ public class AuthenticationService : IAuthentication
     private readonly IOtp _otp;
     private readonly IProfile _profile;
 
-    public AuthenticationService(IHash hash, IOtp otp, IProfile profile
-    )
+    public AuthenticationService(IProfile profile, IHash hash, IOtp otp)
     {
         _hash = hash;
         _otp = otp;
         _profile = profile;
     }
-    
+
     public bool Verify(string accountId, string password, string otp)
     {
         var passwordFromDb = _profile.GetPasswordFromDb(accountId);
