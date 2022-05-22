@@ -21,7 +21,6 @@ public class AuthenticationService : IAuthentication
     public AuthenticationService(IFailedCounter failedCounter, IHash hash, ILog log, IOtp otp, IProfile profile
     )
     {
-        new NotificationDecorator(this, new SlackAdapter());
         _failedCounter = failedCounter;
         _hash = hash;
         _log = log;
