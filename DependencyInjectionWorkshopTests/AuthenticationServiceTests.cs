@@ -38,6 +38,47 @@ public class AuthenticationServiceTests
         // ShouldResetFailedCount("andy");
     }
 
+    [Test]
+    public void password_incorrect()
+    {
+        GivenIsAccountLocked("andy", false);
+        GivenPasswordFromDb("andy", "HASHPASSWORD");
+        GivenHashedPassword("1234", "HASHPASSWORD");
+        GivenCurrentOtp("andy", "0000");
+
+        ShouldBeInvalid("andy");
+    }
+
+    [Test]
+    public void failed_count_add()
+    {
+        GivenInvalid("andy");
+
+        _failedCounter.Received().Add("andy");
+    }
+
+    [Test]
+    public void notify()
+    {
+        GivenInvalid("andy");
+        _notification.Received().Notify("Login failure");
+    }
+
+    private void GivenInvalid(string accountId)
+    {
+        GivenIsAccountLocked(accountId, false);
+        GivenPasswordFromDb(accountId, "HASHPASSWORD");
+        GivenHashedPassword("1234", "wrong password");
+        GivenCurrentOtp(accountId, "0000");
+        ShouldBeInvalid(accountId);
+    }
+
+    private void ShouldBeInvalid(string accountId)
+    {
+        var verify = _authenticationService.Verify(accountId, "wrong password", "0000");
+        Assert.AreEqual(false, verify);
+    }
+
 
     [Test]
     public void reset_failed_count_when_valid()
