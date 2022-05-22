@@ -1,23 +1,32 @@
 ﻿namespace DependencyInjectionWorkshop.Models;
 
-public class AuthenticationService
+public interface IAuthentication
+{
+    bool Verify(string accountId, string password, string otp);
+}
+
+public class AuthenticationService : IAuthentication
 {
     private readonly IFailedCounter _failedCounter;
     private readonly IHash _hash;
-    private readonly ILog _log;
-    private readonly INotification _notification;
-    private readonly IOtp _otp;
-    private readonly IProfile _profile;
 
-    public AuthenticationService(IFailedCounter failedCounter, IHash hash, ILog log, IOtp otp, IProfile profile,
-        INotification notification)
+    private readonly ILog _log;
+
+    // private readonly INotification _notification;
+    private readonly IOtp _otp;
+
+    private readonly IProfile _profile;
+    // private readonly NotificationDecorator _notificationDecorator;
+
+    public AuthenticationService(IFailedCounter failedCounter, IHash hash, ILog log, IOtp otp, IProfile profile
+    )
     {
+        new NotificationDecorator(this, new SlackAdapter());
         _failedCounter = failedCounter;
         _hash = hash;
         _log = log;
         _otp = otp;
         _profile = profile;
-        _notification = notification;
     }
 
     public AuthenticationService()
@@ -25,9 +34,10 @@ public class AuthenticationService
         _profile = new ProfileDao();
         _hash = new Sha256Adapter();
         _otp = new Otp();
-        _notification = new SlackAdapter();
+        // _notification = new SlackAdapter();
         _failedCounter = new FailedCounter();
         _log = new NLogAdapter();
+        new NotificationDecorator(this, new SlackAdapter());
     }
 
     public bool Verify(string accountId, string password, string otp)
@@ -45,21 +55,18 @@ public class AuthenticationService
             _failedCounter.Reset(accountId);
             return true;
         }
-        else
-        {
 
-            _failedCounter.Add(accountId);
+        _failedCounter.Add(accountId);
 
-            var failedCount = _failedCounter.Get(accountId);
+        var failedCount = _failedCounter.Get(accountId);
 
-            _log.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
+        _log.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
 
-            _notification.Notify("Login failure");
-            return false;
-        }
-
+        // _notificationDecorator.NotifyWhenNotify();
+        return false;
     }
 }
+
 public class FailedTooManyTimesException : Exception
 {
     public string AccountId { get; set; }
