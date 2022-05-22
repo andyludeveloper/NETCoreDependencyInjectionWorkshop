@@ -50,7 +50,7 @@ public class AuthenticationServiceTests
     }
 
     [Test]
-    public void failed_count_add()
+    public void invalid_should_failed_count_add()
     {
         GivenInvalid("andy");
 
@@ -58,7 +58,7 @@ public class AuthenticationServiceTests
     }
 
     [Test]
-    public void notify()
+    public void invalid_should_notify()
     {
         GivenInvalid("andy");
         _notification.Received().Notify("Login failure");
