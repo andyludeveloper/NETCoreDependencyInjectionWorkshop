@@ -15,8 +15,10 @@ public class AuthenticationServiceTests
         _otp = Substitute.For<IOtp>();
         _profile = Substitute.For<IProfile>();
         _notification = Substitute.For<INotification>();
-        _authenticationService = new AuthenticationService(_failedCounter, _hash, _log, _otp, _profile);
+        _authenticationService = new AuthenticationService(_hash, _log, _otp, _profile);
+        _authenticationService = new FailedCounterDecorator(_authenticationService, _failedCounter);
         _authenticationService = new NotificationDecorator(_authenticationService, _notification);
+        _authenticationService = new LogDecorator(_authenticationService, _failedCounter, _log);
     }
 
     private IFailedCounter _failedCounter;

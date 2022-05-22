@@ -7,25 +7,28 @@ public interface IAuthentication
 
 public class AuthenticationService : IAuthentication
 {
-    private readonly IFailedCounter _failedCounter;
+    // private readonly IFailedCounter _failedCounter;
     private readonly IHash _hash;
 
-    private readonly ILog _log;
+    // private readonly ILog _log;
 
     // private readonly INotification _notification;
     private readonly IOtp _otp;
 
     private readonly IProfile _profile;
+    private readonly LogDecorator _logDecorator;
+
+    // private readonly FailedCounterDecorator _failedCounterDecorator;
     // private readonly NotificationDecorator _notificationDecorator;
 
-    public AuthenticationService(IFailedCounter failedCounter, IHash hash, ILog log, IOtp otp, IProfile profile
+    public AuthenticationService(IHash hash, ILog log, IOtp otp, IProfile profile
     )
     {
-        _failedCounter = failedCounter;
         _hash = hash;
-        _log = log;
+        // _log = log;
         _otp = otp;
         _profile = profile;
+        // _logDecorator = new LogDecorator(this);
     }
 
     // public AuthenticationService()
@@ -41,28 +44,15 @@ public class AuthenticationService : IAuthentication
 
     public bool Verify(string accountId, string password, string otp)
     {
-        //is account locked
-        var isAccountLocked = _failedCounter.GetIsAccountLocked(accountId);
-        if (isAccountLocked) throw new FailedTooManyTimesException { AccountId = accountId };
-
         var passwordFromDb = _profile.GetPasswordFromDb(accountId);
         var inputPassword = _hash.Compute(password);
         var otpFromApi = _otp.GetCurrentOtp(accountId);
 
-        if (passwordFromDb == inputPassword && otp == otpFromApi)
-        {
-            _failedCounter.Reset(accountId);
-            return true;
-        }
+        return passwordFromDb == inputPassword && otp == otpFromApi;
 
-        _failedCounter.Add(accountId);
-
-        var failedCount = _failedCounter.Get(accountId);
-
-        _log.LogFailedCount($"accountId:{accountId} failed times:{failedCount}");
+        // _logDecorator.LogFailedCount(accountId);
 
         // _notificationDecorator.NotifyWhenNotify();
-        return false;
     }
 }
 
